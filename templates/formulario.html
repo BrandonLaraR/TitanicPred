@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Predicción Titanic - ¿Sobrevivirá?</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    form {
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+    }
+    button {
+      margin-top: 1.5rem;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .resultado {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <form id="predict-form">
+    <h2>Predicción de supervivencia</h2>
+
+    <label for="sex_female">Sexo (1 = mujer, 0 = hombre)</label>
+    <input type="number" id="sex_female" required min="0" max="1">
+
+    <label for="age">Edad</label>
+    <input type="number" id="age" required step="any" min="0">
+
+    <label for="fare">Tarifa (Fare)</label>
+    <input type="number" id="fare" required step="any" min="0">
+
+    <label for="pclass">Clase (1 = alta, 2 = media, 3 = baja)</label>
+    <input type="number" id="pclass" required min="1" max="3">
+
+    <label for="cabin">Cabina (número codificado)</label>
+    <input type="number" id="cabin" required step="any" min="0">
+
+    <button type="submit">Predecir</button>
+
+    <div class="resultado" id="resultado"></div>
+  </form>
+
+  <script>
+    document.getElementById("predict-form").addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const features = [
+        parseFloat(document.getElementById("sex_female").value),
+        parseFloat(document.getElementById("age").value),
+        parseFloat(document.getElementById("fare").value),
+        parseFloat(document.getElementById("pclass").value),
+        parseFloat(document.getElementById("cabin").value)
+      ];
+
+      const response = await fetch("/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ features })
+      });
+
+      const data = await response.json();
+      const resultado = document.getElementById("resultado");
+
+      if (response.ok) {
+        resultado.textContent = `Resultado: ${data.predicted_class === 1 ? "Sobrevive 🟢" : "No sobrevive 🔴"}`;
+        resultado.style.color = data.predicted_class === 1 ? "green" : "red";
+      } else {
+        resultado.textContent = `Error: ${data.error}`;
+        resultado.style.color = "darkred";
+      }
+    });
+  </script>
+
+</body>
+</html>
