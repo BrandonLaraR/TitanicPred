@@ -4,98 +4,485 @@
   <meta charset="UTF-8">
   <title>Predicción Titanic - ¿Sobrevivirá?</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      padding: 20px;
+      position: relative;
     }
-    form {
-      background-color: #fff;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="90" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="70" r="1" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
       width: 100%;
-      max-width: 400px;
+      max-width: 450px;
+      position: relative;
+      z-index: 1;
     }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      color: #1e3c72;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .ship-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      animation: sway 3s ease-in-out infinite;
+    }
+
+    @keyframes sway {
+      0%, 100% { transform: rotate(-2deg); }
+      50% { transform: rotate(2deg); }
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
     label {
       display: block;
-      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      color: #333;
+      font-weight: 600;
+      font-size: 0.9rem;
     }
-    input, button {
+
+    input, select {
       width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.25rem;
+      padding: 0.75rem 1rem;
+      border: 2px solid #e1e8ed;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: #fff;
     }
-    button {
-      margin-top: 1.5rem;
-      background-color: #007bff;
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2a5298;
+      box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .input-icon {
+      position: absolute;
+      right: 12px;
+      top: 38px;
+      color: #888;
+      font-size: 1.1rem;
+    }
+
+    .gender-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .gender-option {
+      flex: 1;
+      padding: 0.75rem;
+      border: 2px solid #e1e8ed;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+
+    .gender-option.active {
+      background: #2a5298;
+      color: white;
+      border-color: #2a5298;
+    }
+
+    .gender-option:hover {
+      border-color: #2a5298;
+      transform: translateY(-2px);
+    }
+
+    .class-selector {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .class-option {
+      flex: 1;
+      padding: 0.75rem;
+      border: 2px solid #e1e8ed;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .class-option.active {
+      background: #2a5298;
+      color: white;
+      border-color: #2a5298;
+    }
+
+    .class-option:hover {
+      border-color: #2a5298;
+      transform: translateY(-2px);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
       color: white;
       border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
       cursor: pointer;
-    }
-    .resultado {
+      transition: all 0.3s ease;
       margin-top: 1rem;
-      font-weight: bold;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(42, 82, 152, 0.3);
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .resultado {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border-radius: 10px;
       text-align: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .resultado.success {
+      background: #d4edda;
+      color: #155724;
+      border: 2px solid #c3e6cb;
+    }
+
+    .resultado.danger {
+      background: #f8d7da;
+      color: #721c24;
+      border: 2px solid #f5c6cb;
+    }
+
+    .resultado.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 2px solid #f5c6cb;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #2a5298;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: help;
+      color: #888;
+      margin-left: 5px;
+    }
+
+    .tooltip:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 0.5rem;
+      border-radius: 5px;
+      white-space: nowrap;
+      z-index: 1000;
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem;
+        margin: 10px;
+      }
+      
+      .header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .class-selector, .gender-toggle {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body>
 
-  <form id="predict-form">
-    <h2>Predicción de supervivencia</h2>
+  <div class="container">
+    <div class="header">
+      <div class="ship-icon">🚢</div>
+      <h1>Predicción Titanic</h1>
+      <p>Ingresa los datos del pasajero para predecir su supervivencia</p>
+    </div>
 
-    <label for="sex_female">Sexo (1 = mujer, 0 = hombre)</label>
-    <input type="number" id="sex_female" required min="0" max="1">
+    <form id="predict-form">
+      <div class="form-group">
+        <label for="sex_female">
+          Sexo 
+          <span class="tooltip" data-tooltip="Selecciona el género del pasajero">ℹ️</span>
+        </label>
+        <input type="hidden" id="sex_female" value="0">
+        <div class="gender-toggle">
+          <div class="gender-option" data-value="0">👨 Hombre</div>
+          <div class="gender-option" data-value="1">👩 Mujer</div>
+        </div>
+      </div>
 
-    <label for="age">Edad</label>
-    <input type="number" id="age" required step="any" min="0">
+      <div class="form-group">
+        <label for="age">
+          Edad 
+          <span class="tooltip" data-tooltip="Edad del pasajero en años">ℹ️</span>
+        </label>
+        <input type="number" id="age" required step="any" min="0" max="100" placeholder="Ej: 29">
+        <div class="input-icon">🎂</div>
+      </div>
 
-    <label for="fare">Tarifa (Fare)</label>
-    <input type="number" id="fare" required step="any" min="0">
+      <div class="form-group">
+        <label for="fare">
+          Tarifa 
+          <span class="tooltip" data-tooltip="Precio del boleto en libras esterlinas">ℹ️</span>
+        </label>
+        <input type="number" id="fare" required step="any" min="0" placeholder="Ej: 71.28">
+        <div class="input-icon">💰</div>
+      </div>
 
-    <label for="pclass">Clase (1 = alta, 2 = media, 3 = baja)</label>
-    <input type="number" id="pclass" required min="1" max="3">
+      <div class="form-group">
+        <label for="pclass">
+          Clase del boleto 
+          <span class="tooltip" data-tooltip="Clase socioeconómica del pasajero">ℹ️</span>
+        </label>
+        <input type="hidden" id="pclass" value="3">
+        <div class="class-selector">
+          <div class="class-option" data-value="1">🥇 Primera</div>
+          <div class="class-option" data-value="2">🥈 Segunda</div>
+          <div class="class-option active" data-value="3">🥉 Tercera</div>
+        </div>
+      </div>
 
-    <label for="cabin">Cabina (número codificado)</label>
-    <input type="number" id="cabin" required step="any" min="0">
+      <div class="form-group">
+        <label for="cabin">
+          Cabina 
+          <span class="tooltip" data-tooltip="Deck de la cabina del pasajero">ℹ️</span>
+        </label>
+        <select id="cabin" required>
+          <option value="0">🅰️ Deck A</option>
+          <option value="1">🅱️ Deck B</option>
+          <option value="2">🅲️ Deck C</option>
+          <option value="3">🅳️ Deck D</option>
+          <option value="4">🅴️ Deck E</option>
+          <option value="5">🅵️ Deck F</option>
+          <option value="6">🅶️ Deck G</option>
+          <option value="7">🅣️ Deck T</option>
+          <option value="8" selected>❓ Desconocido</option>
+        </select>
+      </div>
 
-    <button type="submit">Predecir</button>
-
-    <div class="resultado" id="resultado"></div>
-  </form>
+      <button type="submit" class="submit-btn">🔮 Predecir Supervivencia</button>
+      
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Analizando datos...</p>
+      </div>
+      
+      <div class="resultado" id="resultado"></div>
+    </form>
+  </div>
 
   <script>
+    // Manejo de toggles personalizados
+    document.querySelectorAll('.gender-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.gender-option').forEach(opt => opt.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('sex_female').value = this.dataset.value;
+      });
+    });
+
+    document.querySelectorAll('.class-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.class-option').forEach(opt => opt.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('pclass').value = this.dataset.value;
+      });
+    });
+
+    // Manejo del formulario
     document.getElementById("predict-form").addEventListener("submit", async function(event) {
       event.preventDefault();
 
-      const features = [
-        parseFloat(document.getElementById("sex_female").value),
-        parseFloat(document.getElementById("age").value),
-        parseFloat(document.getElementById("fare").value),
-        parseFloat(document.getElementById("pclass").value),
-        parseFloat(document.getElementById("cabin").value)
-      ];
-
-      const response = await fetch("/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ features })
-      });
-
-      const data = await response.json();
+      const loading = document.getElementById("loading");
       const resultado = document.getElementById("resultado");
+      const submitBtn = document.querySelector(".submit-btn");
 
-      if (response.ok) {
-        resultado.textContent = `Resultado: ${data.predicted_class === 1 ? "Sobrevive 🟢" : "No sobrevive 🔴"}`;
-        resultado.style.color = data.predicted_class === 1 ? "green" : "red";
-      } else {
-        resultado.textContent = `Error: ${data.error}`;
-        resultado.style.color = "darkred";
+      // Mostrar loading
+      loading.style.display = "block";
+      resultado.style.display = "none";
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = "🔄 Procesando...";
+
+      try {
+        const features = [
+          parseFloat(document.getElementById("sex_female").value),
+          parseFloat(document.getElementById("age").value),
+          parseFloat(document.getElementById("fare").value),
+          parseFloat(document.getElementById("pclass").value),
+          parseFloat(document.getElementById("cabin").value)
+        ];
+
+        const response = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ features })
+        });
+
+        const data = await response.json();
+
+        // Ocultar loading
+        loading.style.display = "none";
+        resultado.style.display = "block";
+
+        if (response.ok) {
+          if (data.predicted_class === 1) {
+            resultado.className = "resultado success";
+            resultado.innerHTML = `
+              <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🎉</div>
+              <div>¡El pasajero sobrevive!</div>
+              <div style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">
+                Basado en las características ingresadas
+              </div>
+            `;
+          } else {
+            resultado.className = "resultado danger";
+            resultado.innerHTML = `
+              <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">💔</div>
+              <div>El pasajero no sobrevive</div>
+              <div style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">
+                Basado en las características ingresadas
+              </div>
+            `;
+          }
+        } else {
+          resultado.className = "resultado error";
+          resultado.innerHTML = `
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⚠️</div>
+            <div>Error en la predicción</div>
+            <div style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">
+              ${data.error || 'Intenta nuevamente'}
+            </div>
+          `;
+        }
+      } catch (error) {
+        loading.style.display = "none";
+        resultado.style.display = "block";
+        resultado.className = "resultado error";
+        resultado.innerHTML = `
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔌</div>
+          <div>Error de conexión</div>
+          <div style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">
+            Verifica tu conexión a internet
+          </div>
+        `;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = "🔮 Predecir Supervivencia";
       }
+    });
+
+    // Animaciones de entrada
+    document.addEventListener('DOMContentLoaded', function() {
+      const container = document.querySelector('.container');
+      container.style.opacity = '0';
+      container.style.transform = 'translateY(30px)';
+      
+      setTimeout(() => {
+        container.style.transition = 'all 0.6s ease';
+        container.style.opacity = '1';
+        container.style.transform = 'translateY(0)';
+      }, 100);
     });
   </script>
 
