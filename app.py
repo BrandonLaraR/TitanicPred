@@ -4,22 +4,27 @@ import joblib, numpy as np, os
 import pandas as pd
 
 # ───── Configuración ─────
-ALLOWED_ORIGIN = "https://poryectom2-1.onrender.com"  
-MODEL_PATH = "modelo_knn_entrenado.pkl"       
-INPUT_FEATURES_PATH = "input_features.pkl" 
+ALLOWED_ORIGIN = "https://poryectom2-1.onrender.com"  # Tu frontend
+MODEL_PATH = "modelo_knn_entrenado.pkl"
+INPUT_FEATURES_PATH = "input_features.pkl"
+PCA_PATH = "pca_transform.pkl"
 
 app = Flask(__name__, template_folder="templates")
 CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGIN}})
 
-# ───── Cargar modelo y features esperadas ─────
+# ───── Cargar modelo, features y PCA ─────
 try:
     model = joblib.load(MODEL_PATH)
     input_features = joblib.load(INPUT_FEATURES_PATH)
-    print("✅ Modelo y features cargados")
+    pca = joblib.load(PCA_PATH)
+    print("✅ Modelo, features y PCA cargados correctamente")
 except Exception as e:
     model = None
     input_features = []
-    print("❌ Error al cargar modelo o features:", e)
+    pca = None
+    print("❌ Error al cargar modelo, features o PCA:", e)
+
+# ───── Rutas ─────
 
 @app.route("/")
 def home():
@@ -31,8 +36,8 @@ def formulario():
 
 @app.route("/health")
 def health():
-    if model is None:
-        return jsonify(status="error", message="Modelo no cargado"), 500
+    if model is None or pca is None:
+        return jsonify(status="error", message="Modelo o PCA no cargado"), 500
     return jsonify(status="ok")
 
 @app.route("/model-info")
@@ -43,8 +48,8 @@ def model_info():
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    if model is None:
-        return jsonify(error="Modelo no cargado"), 500
+    if model is None or pca is None:
+        return jsonify(error="Modelo o PCA no cargado"), 500
 
     data = request.get_json(silent=True)
     if not data or "features" not in data:
@@ -64,8 +69,9 @@ def predict():
     try:
         parsed_features = [float(x) for x in features]
         X = pd.DataFrame([parsed_features], columns=input_features)
-        prediction = int(model.predict(X)[0])
-        return jsonify(predicted_class=prediction)  # 0 = no sobrevivió, 1 = sobrevivió
+        X_pca = pca.transform(X)
+        prediction = int(model.predict(X_pca)[0])
+        return jsonify(predicted_class=prediction)
     except Exception as e:
         return jsonify(error=f"Error durante la predicción: {str(e)}"), 500
 
